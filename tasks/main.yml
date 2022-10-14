@@ -1,0 +1,38 @@
+---
+# tasks file for grafana
+
+- name: Add repo Grafana
+  yum_repository:
+  name: grafana
+  description: GRAFANA YUM repo
+  baseurl: "{{ grafana_repo }}"
+
+- name: Install Grafana
+  dnf:
+    name: grafana
+    state: present
+- name: Add Grafana port to firewalld
+  firewalld:
+    port: 3000/tcp
+    permanent: yes
+    state: enabled
+- name: Start Grafana service
+  systemd:
+    daemon_reload: yes
+    name: grafana-server
+    enabled: yes
+    state: restarted
+
+- name: wait for service up
+  uri:
+    url: "http://127.0.0.1:3000"
+    status_code: 200
+  register: __result
+  until: __result.status == 200
+  retries: 120
+  delay: 1
+
+- name: change admin password for grafana gui
+  shell : "grafana-cli admin reset-admin-password {{ grafana_admin_password }}"
+  register: __command_admin
+  changed_when: __command_admin.rc !=0

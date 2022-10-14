@@ -1,0 +1,4 @@
+---
+# defaults file for grafana
+grafana_admin_password: davide
+grafana_repo: https://packages.grafana.com/enterprise/rpm
